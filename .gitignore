@@ -5,3 +5,5 @@ dist
 # prebuild가 README.md에서 복사해 만드는 파일이에요
 public/readme.md
 *.log
+e2e/face.y4m
+e2e/shots
