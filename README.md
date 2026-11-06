@@ -116,6 +116,7 @@
 npm install        # 의존성 설치
 npm run dev        # 개발 서버 (http://localhost:5173)
 npm test           # 점수 계산 자동 테스트 (카메라 없이 실행)
+npm run e2e        # 시연 흐름 자동 점검 (가짜 카메라, e2e/README.md 참고)
 npm run build      # 배포용 빌드 (README.md를 public/readme.md로 복사한 뒤 빌드)
 ```
 - 의견 보내기(`api/feedback.js`)는 Vercel에서 동작합니다. 로컬 `npm run dev`에서는 이 기능만 동작하지 않으며, 쓰려면 `vercel dev`와 `BLOB_READ_WRITE_TOKEN`(또는 Vercel Blob 연결)이 필요합니다.
@@ -132,4 +133,5 @@ npm run build      # 배포용 빌드 (README.md를 public/readme.md로 복사�
 | `src/Rest.jsx`, `src/Guardian.jsx` | 쉬어가기, 보호자 설정 |
 | `api/feedback.js` | 의견 보내기 저장 |
 | `tests/scoring.test.js` | 점수 계산 자동 테스트 11개 |
+| `e2e/flow.cjs` | 홈에서 미소 연습까지 카메라 흐름 자동 점검 |
 | `docs/ALGORITHM.md` | 점수 계산식·기준값·시험 기록·검증 현황 |
