@@ -540,7 +540,7 @@ export default function App() {
     setMessage('')
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error('이 브라우저는 카메라를 지원하지 않아요.')
+        throw Object.assign(new Error('이 브라우저는 카메라를 지원하지 않아요.'), { name: 'NotSupportedError' })
       }
 
       // 얼굴 인식 모델은 처음 한 번만 불러옵니다. (영상이 아니라 모델 파일만 불러와요)
@@ -567,7 +567,11 @@ export default function App() {
       } else if (err?.name === 'NotFoundError') {
         setMessage('연결된 카메라를 찾을 수 없어요.')
       } else {
-        setMessage(err?.message || '카메라를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.')
+        setMessage(
+          err?.name === 'NotSupportedError'
+            ? err.message
+            : '카메라를 시작하지 못했어요. 인터넷 연결을 확인하고 잠시 후 다시 시도해 주세요.',
+        )
       }
     }
   }
@@ -686,7 +690,8 @@ export default function App() {
           👤🔒 개인정보 안내<br />
           카메라 영상과 얼굴 정보는 이 기기 안에서만 사용돼요.<br />
           서버로 보내지 않고, 영상·얼굴 정보는 저장하지 않아요.<br />
-          ❤️ 연습 기록(날짜·점수)은 로그인하면 이 기기에만 저장돼요.
+          ❤️ 연습 기록(날짜·점수)은 로그인하면 이 기기에만 저장돼요.<br />
+          💬 의견 보내기로 쓴 글만 서버에 저장돼요.
         </p>
         <p className="home-feedback">
           <button className="link" onClick={() => setFeedbackOpen(true)}>의견 보내기 (기능 추가 · 불편한 점)</button>
