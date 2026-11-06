@@ -1,0 +1,341 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', system-ui, sans-serif;
+  background: #0f172a;
+  color: #f1f5f9;
+}
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+  text-align: center;
+}
+h1 { margin: 0 0 4px; }
+.subtitle { margin: 0 0 20px; color: #94a3b8; }
+.stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #1e293b;
+  border-radius: 16px;
+  overflow: hidden;
+}
+/* 거울처럼 보이도록 좌우 반전 (영상과 점 모두 동일하게 반전) */
+.stage video, .stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+.controls { margin: 20px 0 8px; }
+button {
+  font: inherit;
+  font-size: 1.1rem;
+  padding: 12px 28px;
+  border: 0;
+  border-radius: 999px;
+  background: #22d3ee;
+  color: #0f172a;
+  font-weight: 700;
+  cursor: pointer;
+}
+button.stop { background: #f87171; }
+button:disabled { opacity: 0.6; cursor: wait; }
+.status { color: #a7f3d0; }
+.error { color: #fca5a5; }
+.privacy { margin-top: 24px; font-size: 0.9rem; color: #94a3b8; }
+
+.practice { margin: 12px 0; }
+.notice { color: #fde68a; min-height: 1.5em; }
+.done { font-size: 1.6rem; font-weight: 800; color: #86efac; margin: 8px 0; }
+.disclaimer { font-size: 0.85rem; color: #94a3b8; }
+.meter { margin: 8px auto; max-width: 420px; text-align: left; }
+.meter-head { display: flex; justify-content: space-between; font-size: 0.95rem; }
+.meter.strong .meter-head { font-weight: 800; }
+.bar { height: 10px; background: #334155; border-radius: 999px; overflow: hidden; max-width: 420px; margin: 4px auto; }
+.bar > span { display: block; height: 100%; background: #22c55e; transition: width 0.1s linear; }
+
+button.ghost { background: #334155; color: #e2e8f0; font-size: 0.9rem; padding: 6px 16px; }
+.debug { font-size: 0.8rem; text-align: left; overflow-x: auto; }
+.debug table { width: 100%; border-collapse: collapse; }
+.debug th, .debug td { padding: 3px 6px; border-bottom: 1px solid #334155; text-align: right; }
+.debug th:first-child, .debug td:first-child { text-align: left; }
+.debug .sep td { font-weight: 700; color: #fde68a; }
+
+.home { display: flex; flex-direction: column; gap: 14px; max-width: 360px; margin: 32px auto 0; }
+.home button { font-size: 1.25rem; padding: 18px 28px; }
+.quiz-emoji { font-size: 7rem; line-height: 1.2; margin: 8px 0; }
+.quiz-choices { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 12px 0; }
+.quiz-choices button.right { background: #22c55e; opacity: 1; }
+.quiz-choices button.wrong { background: #f87171; opacity: 1; }
+.quiz-choices button:disabled { cursor: default; }
+.quiz-mark { font-size: 3rem; margin: 4px 0; font-weight: 800; }
+.feedback { margin: 12px auto; max-width: 460px; text-align: left; }
+.feedback p { margin: 6px 0; }
+.fb-good { color: #86efac; }
+.fb-tip { color: #fde68a; }
+/* 카메라 화면 위에 겹쳐 보이는 피드백 (좌우 반전 영향 없음) */
+.stage-feedback {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.78);
+  text-align: left;
+  font-size: 0.9rem;
+  z-index: 2;
+}
+.stage-feedback .feedback { margin: 0 auto; max-width: none; }
+/* 카메라 화면 위에 크게 보이는 제시어 */
+.stage-word {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 14px 12px;
+  background: rgba(15, 23, 42, 0.7);
+  text-align: center;
+  font-size: clamp(3rem, 12vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  z-index: 2;
+}
+.stage-feedback .feedback p { margin: 3px 0; }
+
+/* ── 첫 화면: 감각 부담이 적고 예측하기 쉬운 차분한 디자인 ── */
+.home-screen { max-width: 640px; }
+.home-screen h1 { font-size: 2rem; margin-bottom: 6px; }
+.home-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
+.home-brand h1 { margin: 0; font-size: 2rem; }
+.home-logo { display: block; width: 72px; height: auto; flex: none; }
+.home-lead { font-size: 1.15rem; line-height: 1.6; color: #cbd5e1; margin: 0 0 24px; }
+.home-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 520px) { .home-cards { grid-template-columns: 1fr; } }
+.home-card {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 22px 16px; border-radius: 20px; border: 3px solid transparent;
+  color: #1e293b; font-weight: 400; text-align: center; cursor: pointer;
+  transition: none; /* 갑작스러운 움직임·깜빡임 없음 */
+}
+.home-card.practice { background: #e0f2fe; }
+.home-card.quiz { background: #fef3c7; }
+.home-card:hover, .home-card:focus-visible { border-color: #1e293b; outline: none; }
+.home-card-title { font-size: 1.3rem; font-weight: 800; }
+.home-card-desc { font-size: 1.02rem; line-height: 1.5; }
+.home-card-tag { font-size: 0.95rem; background: rgba(255,255,255,0.8); padding: 4px 12px; border-radius: 999px; }
+.home-safe { list-style: none; padding: 0; margin: 28px auto 0; max-width: 520px; text-align: left; color: #cbd5e1; line-height: 1.7; font-size: 1rem; }
+.home-safe li { margin: 6px 0; }
+.home-icons { font-size: 2rem; line-height: 1; }
+.home-card { padding: 20px 12px 24px; }
+.home-card-title { font-size: 1.8rem; }
+.home-safe { display: flex; justify-content: center; gap: 28px; font-size: 2rem; margin: 28px auto 0; max-width: none; }
+.home-privacy { max-width: 460px; margin: 24px auto 0; padding: 14px 16px; border-radius: 14px; background: rgba(148, 163, 184, 0.15); color: #e2e8f0; font-size: 0.95rem; line-height: 1.7; }
+
+/* 안심 아이콘: 같은 크기의 네모 테두리 */
+.icon-box {
+  width: 76px; height: 76px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid #94a3b8; border-radius: 16px;
+  background: rgba(148, 163, 184, 0.12);
+  font-size: 1.7rem; line-height: 1; color: inherit;
+}
+button.icon-box { font-weight: 400; }
+button.icon-box.heart { background: #fee2e2; border-color: #f87171; cursor: pointer; font-size: 2rem; }
+button.icon-box.heart:hover, button.icon-box.heart:focus-visible { border-color: #b91c1c; outline: none; }
+
+/* 학습 기록(로그인) 창 */
+.modal-back { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+.modal-card { background: #1e293b; border-radius: 20px; padding: 20px; width: 100%; max-width: 380px; max-height: 90vh; overflow-y: auto; text-align: center; }
+.modal-heart { font-size: 3rem; }
+.modal-name { font-size: 1.3rem; font-weight: 800; margin: 4px 0 10px; }
+.modal-input { font: inherit; font-size: 1.1rem; padding: 12px 14px; border-radius: 12px; border: 2px solid #475569; background: #0f172a; color: #f1f5f9; width: 100%; margin-bottom: 12px; text-align: center; }
+/* ── 쉬어가기: 긴장·흥분을 가라앉히는 차분한 화면 (소리·깜빡임 없음) ── */
+button.icon-box.pause { background: #dcfce7; border-color: #4ade80; cursor: pointer; font-size: 1.9rem; }
+button.icon-box.pause:hover, button.icon-box.pause:focus-visible { border-color: #15803d; outline: none; }
+.rest { max-width: 460px; margin: 0 auto; }
+.rest-hello { font-size: 1.25rem; margin: 6px 0 14px; color: #cbd5e1; }
+.rest-tabs { margin-bottom: 8px; }
+.rest-breath { margin: 10px 0 6px; }
+.breath-circle {
+  width: 220px; height: 220px; margin: 18px auto; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #a7f3d0, #38bdf8 70%, #0ea5e9);
+  opacity: 0.9;
+}
+.breath-text { font-size: 1.6rem; font-weight: 700; margin: 6px 0; }
+.breath-count { font-size: 2.4rem; font-weight: 800; margin: 0 0 8px; color: #a7f3d0; }
+.rest-ground { margin: 14px 0 6px; }
+.ground-icon { font-size: 4rem; margin: 6px 0; }
+.ground-text { font-size: 1.4rem; line-height: 1.5; margin: 6px 0 10px; }
+.ground-dots { letter-spacing: 6px; color: #94a3b8; margin: 4px 0 12px; }
+.record-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 12px; }
+.record-stat { background: #0f172a; border-radius: 14px; padding: 10px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.record-stat-label { font-size: 0.85rem; color: #94a3b8; }
+.record-stat-value { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 6px; min-height: 44px; }
+.record-list { list-style: none; padding: 0; margin: 8px 0; text-align: left; }
+.record-list li { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.record-bar { flex: 1; height: 10px; background: #334155; border-radius: 999px; overflow: hidden; }
+.record-bar > span { display: block; height: 100%; background: #22c55e; }
+.record-pct { width: 3em; text-align: right; font-weight: 700; }
+.record-date { font-size: 0.8rem; color: #94a3b8; width: 6.5em; text-align: right; }
+
+/* 안심 아이콘: 각 상자에 배경색. 개인정보 상자는 사람(왼쪽 위)·자물쇠(오른쪽 아래)를 사선으로 */
+.icon-box:nth-child(1) { background: #dbeafe; border-color: #60a5fa; }
+.icon-box:nth-child(2) { background: #dcfce7; border-color: #4ade80; }
+.icon-box.privacy { position: relative; }
+.icon-box.privacy .p-person { position: absolute; left: 11px; top: 8px; font-size: 1.6rem; }
+.icon-box.privacy .p-lock { position: absolute; right: 11px; bottom: 8px; font-size: 1.6rem; }
+
+/* 소아이콘(사람·자물쇠)은 가운데에서 한 줄로, 큰 아이콘 상자도 같은 높이의 한 줄로 */
+.icon-box.privacy { gap: 4px; }
+.icon-box.privacy .p-person, .icon-box.privacy .p-lock { position: static; font-size: 1.45rem; }
+.home-safe { align-items: center; }
+
+/* ── 정렬 정리: 큰 카드 두 장은 같은 크기, 아래 아이콘 세 개는 같은 크기로 한 직선 위에 ── */
+.home-cards { grid-auto-rows: 1fr; }
+.home-card { min-height: 270px; justify-content: center; min-width: 0; margin: 0; } /* .practice 의 margin 이 섞여 들어와 카드 크기가 달라지던 것 방지 */
+/* 두 카드의 아이콘(위 이모지, 아래 얼굴 그림)을 정확히 같은 크기 상자에 */
+.home-card .home-icons { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; font-size: 3rem; line-height: 1; }
+.home-card svg { width: 140px; height: 140px; flex: none; }
+/* 두 카드의 로고 그림: 같은 크기의 이미지(같은 가로·세로)라서 똑같이 보임 */
+.home-card .home-card-logo { display: block; width: 150px; height: 140px; object-fit: contain; flex: none; }
+.home-safe {
+  display: grid; grid-template-columns: repeat(3, 80px); justify-content: center;
+  align-items: center; gap: 24px; margin: 28px auto 0; font-size: 1rem; line-height: 1;
+}
+.home-safe .icon-box, .home-safe button.icon-box.heart {
+  width: 80px; height: 80px; margin: 0; padding: 0; font-size: 1.9rem; line-height: 1;
+}
+.home-safe .icon-box.privacy { gap: 2px; }
+.home-safe .icon-box.privacy .p-person, .home-safe .icon-box.privacy .p-lock { font-size: 1.45rem; }
+.home-privacy { margin-top: 24px; }
+.home-intro { font-size: 1.7rem; font-weight: 700; color: #f8fafc; line-height: 1.4; margin: 0 0 22px; }
+
+/* 아이콘 밑 한글 이름 */
+.home-safe { grid-template-columns: repeat(3, 96px); align-items: start; }
+.icon-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.icon-label { font-size: 1.05rem; font-weight: 700; color: #f1f5f9; line-height: 1.2; }
+/* 상자가 이제 각 묶음의 첫 번째라서 색은 이름으로 지정 */
+.icon-box.privacy { background: #dbeafe; border-color: #60a5fa; }
+.icon-box.pause { background: #dcfce7; border-color: #4ade80; }
+
+/* 개인정보(보호자 설정) 아이콘은 이제 누를 수 있는 버튼 */
+button.icon-box.privacy { cursor: pointer; font-weight: 400; }
+button.icon-box.privacy:hover, button.icon-box.privacy:focus-visible { border-color: #1d4ed8; outline: none; }
+.guardian-choices { margin: 10px 0; }
+.guardian-choices button, .modal-card p button.ghost { margin: 2px; }
+.rest-fav { margin: 18px 0 8px; }
+.fav-main { font-size: 5rem; font-weight: 800; margin: 8px 0; color: #a7f3d0; word-break: keep-all; }
+
+/* 게이지: 라벨 옆 큰 그림 + 긍정(초록)/부정(빨강) 색 */
+.meter-icon { font-size: 1.7rem; margin-right: 8px; vertical-align: middle; }
+.meter.tone-good .bar > span { background: #22c55e; }
+.meter.tone-bad .bar > span { background: #ef4444; }
+.meter.tone-bad .meter-head b { color: #fca5a5; }
+.meter.tone-good .meter-head b { color: #86efac; }
+.valence { display: inline-block; font-size: 1.3rem; font-weight: 800; padding: 6px 18px; border-radius: 999px; margin: 6px 0; }
+.valence.good { background: #dcfce7; color: #166534; border: 3px solid #22c55e; }
+.valence.bad { background: #fee2e2; color: #991b1b; border: 3px solid #ef4444; }
+
+/* 오른쪽 위 고정: 좋아하는 것(안정) 바로가기 */
+.calm-fab {
+  position: fixed; top: 12px; right: 12px; z-index: 5;
+  width: 64px; height: 64px; padding: 0; border-radius: 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  background: #dcfce7; border: 3px solid #4ade80; color: #14532d; font-weight: 700; cursor: pointer;
+}
+.calm-fab span { font-size: 1.6rem; line-height: 1; }
+.calm-fab small { font-size: 0.8rem; line-height: 1; }
+.calm-fab:hover, .calm-fab:focus-visible { border-color: #15803d; outline: none; }
+
+/* 카메라 시작 전 안내: 무표정 이모지를 크게 */
+.placeholder-box { text-align: center; line-height: 1.6; padding: 0 12px; }
+.placeholder-emoji { font-size: 5rem; line-height: 1.1; margin-bottom: 6px; }
+
+/* 홈 맨 아래: 작은 밑줄 글씨 링크 (의견 보내기) */
+.home-feedback { margin: 18px 0 8px; }
+button.link { background: none; border: 0; padding: 4px 6px; font-size: 0.9rem; font-weight: 400; color: #94a3b8; text-decoration: underline; cursor: pointer; }
+button.link:hover, button.link:focus-visible { color: #e2e8f0; outline: none; }
+.feedback-types { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 12px; }
+.feedback-types button { font-size: 0.95rem; padding: 8px 14px; }
+.feedback-text { text-align: left; resize: vertical; }
+.feedback-trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+/* 홈 작은 아이콘: 맨 왼쪽에 ❓ 설명 (4개) */
+.home-safe { grid-template-columns: repeat(4, 80px); gap: 14px; }
+button.icon-box.help { background: #fef9c3; border-color: #facc15; cursor: pointer; font-size: 1.9rem; font-weight: 400; }
+button.icon-box.help:hover, button.icon-box.help:focus-visible { border-color: #a16207; outline: none; }
+@media (max-width: 400px) {
+  .home-safe { grid-template-columns: repeat(4, 68px); gap: 10px; }
+  .home-safe .icon-box, .home-safe button.icon-box.heart { width: 68px; height: 68px; }
+}
+.help-card { text-align: left; }
+.help-card .modal-heart, .help-card .modal-name { text-align: center; }
+.help-list { list-style: none; padding: 0; margin: 8px 0; display: flex; flex-direction: column; gap: 10px; }
+.help-list li { display: flex; gap: 12px; align-items: flex-start; background: #0f172a; border-radius: 14px; padding: 10px 12px; line-height: 1.5; }
+.help-icon { font-size: 2rem; line-height: 1.2; flex: none; }
+.help-list b { color: #f8fafc; }
+
+/* 설명 창: 제목만 보이고 ▶ 를 누르면 펼쳐지는 목록 */
+.help-card { max-width: 440px; }
+.help-acc { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; text-align: left; }
+.help-item { background: #0f172a; border-radius: 14px; overflow: hidden; }
+button.help-head {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  background: transparent; color: #f1f5f9; font-size: 1.05rem; font-weight: 700; text-align: left;
+  padding: 12px 14px; border-radius: 0; cursor: pointer;
+}
+button.help-head:hover, button.help-head:focus-visible { background: #1e293b; outline: none; }
+.help-arrow { color: #a7f3d0; font-size: 0.9rem; flex: none; }
+.help-body { padding: 2px 14px 12px; line-height: 1.7; color: #e2e8f0; font-size: 0.95rem; }
+.help-body p { margin: 8px 0; }
+.help-body ul { margin: 8px 0; padding-left: 20px; }
+.help-body li { margin: 6px 0; }
+
+/* 설명 창 맨 아래: README 전체 (제작 과정 및 설명) */
+.help-body.md h3, .help-body.md h4, .help-body.md h5 { margin: 14px 0 6px; color: #f8fafc; line-height: 1.4; }
+.help-body.md h3 { font-size: 1.15rem; }
+.help-body.md h4 { font-size: 1.05rem; }
+.help-body.md h5 { font-size: 1rem; }
+.help-body.md pre { background: #020617; padding: 10px 12px; border-radius: 10px; overflow-x: auto; font-size: 0.85rem; }
+.help-body.md code { background: #020617; padding: 1px 5px; border-radius: 6px; }
+.help-body.md a { color: #7dd3fc; }
+.md-table { overflow-x: auto; margin: 8px 0; }
+.md-table table { border-collapse: collapse; font-size: 0.85rem; width: 100%; }
+.md-table th, .md-table td { border: 1px solid #334155; padding: 6px 8px; text-align: left; vertical-align: top; }
+.md-table th { background: #1e293b; }
+
+/* 제작 이유 안의 소제목 목록은 한 단계 밝은 칸 */
+.help-sub { margin-top: 10px; }
+.help-sub .help-item { background: #1e293b; }
+.help-sub button.help-head:hover, .help-sub button.help-head:focus-visible { background: #334155; }
+
+/* 배경: 잔잔한 빛 번짐만 (무늬 없음, 움직이거나 깜빡이지 않아요) */
+body {
+  background-color: #0f172a;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 12% 0%, rgba(45, 212, 191, 0.16), transparent 70%),
+    radial-gradient(ellipse 60% 45% at 95% 100%, rgba(99, 102, 241, 0.18), transparent 70%),
+    linear-gradient(180deg, #0f172a 0%, #111c33 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+a.link { padding: 4px 6px; font-size: 0.9rem; color: #94a3b8; text-decoration: underline; }
+a.link:hover, a.link:focus-visible { color: #e2e8f0; outline: none; }
+
+/* 퀴즈 결과 별 */
+.quiz-stars { font-size: 2.4rem; line-height: 1.3; margin: 6px 0 0; letter-spacing: 4px; word-break: keep-all; }
+.quiz-stars .star-empty { color: #64748b; font-size: 2rem; }
+.quiz-count { font-size: 1rem; color: #94a3b8; margin: 0 0 12px; }
+
+/* 오래 하면 나오는 부드러운 쉬어가기 권유 */
+.rest-hint { margin: 12px auto; max-width: 420px; padding: 12px 16px; border-radius: 16px; background: #dcfce7; color: #14532d; border: 3px solid #4ade80; }
+.rest-hint p { margin: 0 0 8px; font-size: 1.15rem; font-weight: 700; }
